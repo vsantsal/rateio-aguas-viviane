@@ -82,7 +82,7 @@ function LeituraForm({ leitura, onClose }: { leitura: Leitura | null; onClose: (
   const unidades = useStore(listUnidades) ?? [];
   const [mes, setMes] = useState(leitura?.mesReferencia ?? todayYM());
   const [unidade, setUnidade] = useState(leitura?.unidade ?? unidades[0]?.nome ?? "");
-  const [vol, setVol] = useState(String(leitura?.volumeConsumido ?? ""));
+  const [vol, setVol] = useState(String(leitura?.leituraAtual ?? ""));
   const [err, setErr] = useState("");
 
   return (
@@ -91,8 +91,8 @@ function LeituraForm({ leitura, onClose }: { leitura: Leitura | null; onClose: (
         const volN = Number(vol.replace(",", "."));
         if (!/^\d{4}-\d{2}$/.test(mes)) return setErr("Mês inválido.");
         if (!unidade) return setErr("Selecione uma unidade.");
-        if (!isFinite(volN) || volN < 0) return setErr("Volume inválido.");
-        saveLeitura({ id: leitura?.id, mesReferencia: mes, unidade, volumeConsumido: volN });
+        if (!isFinite(volN) || volN < 0) return setErr("Leitura inválida.");
+        saveLeitura({ id: leitura?.id, mesReferencia: mes, unidade, leituraAtual: volN });
         onClose();
       })}
       className="rounded-xl border border-border bg-card p-5 mb-6 grid sm:grid-cols-4 gap-4"

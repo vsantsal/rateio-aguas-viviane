@@ -1,0 +1,13 @@
+{
+  "name": "Águas do Viviane",
+  "short_name": "Águas",
+  "description": "Controle de contas de água e rateio entre unidades do condomínio.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f7f8",
+  "theme_color": "#0f6b7a",
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

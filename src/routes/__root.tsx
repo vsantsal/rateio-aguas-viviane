@@ -76,20 +76,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "theme-color", content: "#0f6b7a" },
+      { title: "Águas do Viviane — rateio de água do condomínio" },
+      {
+        name: "description",
+        content:
+          "Controle das contas de água do condomínio Edifício Viviane: cadastro de contas, leituras por unidade e rateio proporcional.",
+      },
+      { property: "og:title", content: "Águas do Viviane" },
+      { property: "og:description", content: "Rateio de água do condomínio Edifício Viviane." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icon-512.png" },
+      { rel: "icon", href: "/icon-512.png", type: "image/png" },
+      {
+        rel: "preconnect",
+        href: "https://fonts.gstatic.com",
+        crossOrigin: "anonymous",
+      },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600&display=swap",
       },
     ],
   }),
@@ -115,11 +126,54 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    import("../lib/pwa").then((m) => m.registerSW());
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <AppShell>
+        <Outlet />
+      </AppShell>
     </QueryClientProvider>
+  );
+}
+
+function AppShell({ children }: { children: ReactNode }) {
+  const nav = [
+    { to: "/", label: "Início" },
+    { to: "/contas", label: "Contas" },
+    { to: "/leituras", label: "Leituras" },
+    { to: "/unidades", label: "Unidades" },
+    { to: "/rateio", label: "Rateio" },
+  ] as const;
+  return (
+    <div className="min-h-screen flex flex-col">
+      <header className="border-b border-border bg-card/70 backdrop-blur sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-6">
+          <Link to="/" className="flex items-center gap-2 font-display text-lg font-semibold text-primary">
+            <span aria-hidden className="inline-block w-2.5 h-2.5 rounded-full bg-accent" />
+            Águas do Viviane
+          </Link>
+          <nav className="flex gap-1 overflow-x-auto -mx-2 px-2">
+            {nav.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="px-3 py-1.5 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                activeOptions={{ exact: item.to === "/" }}
+                activeProps={{ className: "bg-secondary text-foreground font-medium" }}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </header>
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-8">{children}</main>
+      <footer className="border-t border-border py-4 text-center text-xs text-muted-foreground">
+        Dados armazenados localmente neste dispositivo.
+      </footer>
+    </div>
   );
 }

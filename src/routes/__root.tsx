@@ -84,9 +84,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Controle das contas de água do condomínio Edifício Viviane: cadastro de contas, leituras por unidade e rateio proporcional.",
       },
-      { property: "og:title", content: "Águas do Viviane" },
-      { property: "og:description", content: "Rateio de água do condomínio Edifício Viviane." },
+      { property: "og:title", content: "Águas do Viviane — rateio de água do condomínio" },
+      { property: "og:description", content: "Water Share Smart simplifies water bill distribution for small condominiums." },
       { property: "og:type", content: "website" },
+      { name: "twitter:title", content: "Águas do Viviane — rateio de água do condomínio" },
+      { name: "description", content: "Water Share Smart simplifies water bill distribution for small condominiums." },
+      { name: "twitter:description", content: "Water Share Smart simplifies water bill distribution for small condominiums." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f764d323-9235-4377-ba63-513c654b7c22/id-preview-e242c22b--25b6a648-757d-4e69-b5ea-f07789779609.lovable.app-1782494926197.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f764d323-9235-4377-ba63-513c654b7c22/id-preview-e242c22b--25b6a648-757d-4e69-b5ea-f07789779609.lovable.app-1782494926197.png" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

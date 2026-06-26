@@ -54,7 +54,7 @@ function LeiturasPage() {
               <tr>
                 <Th>Mês</Th>
                 <Th>Unidade</Th>
-                <Th className="text-right">Volume (m³)</Th>
+                <Th className="text-right">Leitura atual (m³)</Th>
                 <Th />
               </tr>
             </thead>
@@ -63,7 +63,7 @@ function LeiturasPage() {
                 <tr key={l.id} className="border-t border-border">
                   <Td className="font-medium">{l.mesReferencia}</Td>
                   <Td>{l.unidade}</Td>
-                  <Td className="text-right">{fmtNum(l.volumeConsumido)}</Td>
+                  <Td className="text-right">{fmtNum(l.leituraAtual)}</Td>
                   <Td className="text-right whitespace-nowrap">
                     <button className={btnGhost} onClick={() => { setEditing(l); setShowForm(true); }}>Editar</button>{" "}
                     <button className={btnDanger} onClick={() => { if (confirm("Excluir leitura?")) deleteLeitura(l.id); }}>Excluir</button>
@@ -82,7 +82,7 @@ function LeituraForm({ leitura, onClose }: { leitura: Leitura | null; onClose: (
   const unidades = useStore(listUnidades) ?? [];
   const [mes, setMes] = useState(leitura?.mesReferencia ?? todayYM());
   const [unidade, setUnidade] = useState(leitura?.unidade ?? unidades[0]?.nome ?? "");
-  const [vol, setVol] = useState(String(leitura?.volumeConsumido ?? ""));
+  const [vol, setVol] = useState(String(leitura?.leituraAtual ?? ""));
   const [err, setErr] = useState("");
 
   return (
@@ -91,8 +91,8 @@ function LeituraForm({ leitura, onClose }: { leitura: Leitura | null; onClose: (
         const volN = Number(vol.replace(",", "."));
         if (!/^\d{4}-\d{2}$/.test(mes)) return setErr("Mês inválido.");
         if (!unidade) return setErr("Selecione uma unidade.");
-        if (!isFinite(volN) || volN < 0) return setErr("Volume inválido.");
-        saveLeitura({ id: leitura?.id, mesReferencia: mes, unidade, volumeConsumido: volN });
+        if (!isFinite(volN) || volN < 0) return setErr("Leitura inválida.");
+        saveLeitura({ id: leitura?.id, mesReferencia: mes, unidade, leituraAtual: volN });
         onClose();
       })}
       className="rounded-xl border border-border bg-card p-5 mb-6 grid sm:grid-cols-4 gap-4"
@@ -107,7 +107,7 @@ function LeituraForm({ leitura, onClose }: { leitura: Leitura | null; onClose: (
           ))}
         </select>
       </Field>
-      <Field label="Volume consumido (m³)">
+      <Field label="Leitura atual do hidrômetro (m³)">
         <input className={inputClass} inputMode="decimal" value={vol} onChange={(e) => setVol(e.target.value)} required />
       </Field>
       <div className="flex items-end gap-2">

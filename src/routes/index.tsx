@@ -67,7 +67,7 @@ function Home() {
             ))}
             {rateio.linhas.length === 0 && (
               <p className="text-sm text-muted-foreground col-span-full">
-                Cadastre leituras deste mês para gerar o rateio.
+                Cadastre leituras deste mês (e do anterior) para gerar o rateio.
               </p>
             )}
           </div>

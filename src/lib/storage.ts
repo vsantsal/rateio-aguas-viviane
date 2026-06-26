@@ -10,14 +10,14 @@ export type Leitura = {
   id: string;
   mesReferencia: string; // YYYY-MM
   unidade: string;
-  volumeConsumido: number; // m³
+  leituraAtual: number; // m³ marcação atual do hidrômetro
 };
 
 export type Unidade = { id: string; nome: string };
 
 const K = {
   contas: "viviane.contas.v1",
-  leituras: "viviane.leituras.v1",
+  leituras: "viviane.leituras.v2",
   unidades: "viviane.unidades.v2",
 };
 

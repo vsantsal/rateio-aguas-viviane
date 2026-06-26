@@ -3,7 +3,8 @@ import { useMemo, useState } from "react";
 import { useStore } from "@/lib/use-store";
 import { listContas, listLeituras } from "@/lib/storage";
 import { calcularRateio, fmtBRL, fmtNum } from "@/lib/rateio";
-import { PageHeader, Field, inputClass, EmptyState } from "@/components/ui-bits";
+import { exportRateioCSV, exportRateioPDF } from "@/lib/rateio-export";
+import { PageHeader, Field, inputClass, btnPrimary, btnGhost, EmptyState } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/rateio")({
   head: () => ({

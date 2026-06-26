@@ -54,7 +54,7 @@ function LeiturasPage() {
               <tr>
                 <Th>Mês</Th>
                 <Th>Unidade</Th>
-                <Th className="text-right">Volume (m³)</Th>
+                <Th className="text-right">Leitura atual (m³)</Th>
                 <Th />
               </tr>
             </thead>
@@ -63,7 +63,7 @@ function LeiturasPage() {
                 <tr key={l.id} className="border-t border-border">
                   <Td className="font-medium">{l.mesReferencia}</Td>
                   <Td>{l.unidade}</Td>
-                  <Td className="text-right">{fmtNum(l.volumeConsumido)}</Td>
+                  <Td className="text-right">{fmtNum(l.leituraAtual)}</Td>
                   <Td className="text-right whitespace-nowrap">
                     <button className={btnGhost} onClick={() => { setEditing(l); setShowForm(true); }}>Editar</button>{" "}
                     <button className={btnDanger} onClick={() => { if (confirm("Excluir leitura?")) deleteLeitura(l.id); }}>Excluir</button>

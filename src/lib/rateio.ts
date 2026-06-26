@@ -2,52 +2,85 @@ import type { Conta, Leitura } from "./storage";
 
 export type LinhaRateio = {
   unidade: string;
-  volumeConsumido: number;
-  percentual: number; // 0..1
-  valorRateado: number; // R$ in centavos-aware number (2 decimals)
-  ajuste: number; // centavos de ajuste aplicados
+  leituraAnterior: number | null;
+  leituraAtual: number;
+  consumoPrivado: number; // m³
+  parteComum: number; // m³ atribuída desta unidade às áreas comuns
+  volumeAtribuido: number; // consumoPrivado + parteComum
+  percentual: number; // 0..1 sobre volumeAtribuido total
+  valorRateado: number; // R$
+  ajuste: number; // R$ centavos de ajuste
 };
 
 export type Rateio = {
   mesReferencia: string;
+  mesAnterior: string | null;
   conta: Conta | null;
-  totalConsumido: number;
-  diferenca: number; // volumeFaturado - somaConsumido (m³)
+  somaConsumoPrivado: number;
+  consumoComum: number; // m³ atribuídos a áreas comuns (>=0)
+  diferenca: number; // volumeFaturado - somaConsumoPrivado (m³, pode ser negativo)
   linhas: LinhaRateio[];
   somaRateada: number;
 };
 
-/** Half-up rounding to 2 decimals, working in centavos to avoid FP drift. */
 function roundHalfUpCents(n: number): number {
-  // n is in centavos (can be fractional). Banker's-free HALF_UP.
   const sign = n < 0 ? -1 : 1;
-  const abs = Math.abs(n);
-  return sign * Math.floor(abs + 0.5);
+  return sign * Math.floor(Math.abs(n) + 0.5);
+}
+
+/** "AAAA-MM" → "AAAA-MM" do mês anterior. */
+function previousMonth(ym: string): string {
+  const [y, m] = ym.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m - 1, 1));
+  d.setUTCMonth(d.getUTCMonth() - 1);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 /**
- * Rateio proporcional ao consumo medido, com arredondamento HALF UP em centavos.
- * Se a soma dos valores arredondados divergir do valorFaturado, distribui a
- * diferença (em centavos) começando pelas unidades de maior consumo,
- * garantindo que a soma final iguale exatamente a fatura.
+ * Para cada unidade com leitura no mês selecionado, busca a leitura mais
+ * recente anterior a esse mês (mesmo que não seja o mês imediatamente
+ * anterior) e calcula o consumo. Se não existir leitura anterior, assume 0.
  */
+function consumosDoMes(mes: string, leituras: Leitura[]) {
+  const atuais = leituras.filter((l) => l.mesReferencia === mes);
+  return atuais.map((l) => {
+    const anteriores = leituras
+      .filter((x) => x.unidade === l.unidade && x.mesReferencia < mes)
+      .sort((a, b) => b.mesReferencia.localeCompare(a.mesReferencia));
+    const ant = anteriores[0];
+    const consumo = Math.max(0, l.leituraAtual - (ant?.leituraAtual ?? 0));
+    return {
+      unidade: l.unidade,
+      leituraAtual: l.leituraAtual,
+      leituraAnterior: ant ? ant.leituraAtual : null,
+      consumoPrivado: consumo,
+    };
+  });
+}
+
 export function calcularRateio(
   mesReferencia: string,
   conta: Conta | null,
   leituras: Leitura[],
 ): Rateio {
-  const doMes = leituras.filter((l) => l.mesReferencia === mesReferencia);
-  const totalConsumido = doMes.reduce((s, l) => s + (l.volumeConsumido || 0), 0);
+  const base = consumosDoMes(mesReferencia, leituras);
+  const somaConsumoPrivado = base.reduce((s, b) => s + b.consumoPrivado, 0);
 
-  if (!conta || totalConsumido <= 0) {
+  if (!conta || base.length === 0) {
     return {
       mesReferencia,
+      mesAnterior: previousMonth(mesReferencia),
       conta,
-      totalConsumido,
-      diferenca: conta ? conta.volumeFaturado - totalConsumido : 0,
-      linhas: doMes.map((l) => ({
-        unidade: l.unidade,
-        volumeConsumido: l.volumeConsumido,
+      somaConsumoPrivado,
+      consumoComum: 0,
+      diferenca: conta ? conta.volumeFaturado - somaConsumoPrivado : 0,
+      linhas: base.map((b) => ({
+        unidade: b.unidade,
+        leituraAnterior: b.leituraAnterior,
+        leituraAtual: b.leituraAtual,
+        consumoPrivado: b.consumoPrivado,
+        parteComum: 0,
+        volumeAtribuido: b.consumoPrivado,
         percentual: 0,
         valorRateado: 0,
         ajuste: 0,
@@ -56,47 +89,59 @@ export function calcularRateio(
     };
   }
 
+  // Áreas comuns: excedente do volume faturado sobre o consumo medido,
+  // dividido igualmente entre TODAS as unidades com leitura no mês.
+  const consumoComum = Math.max(0, conta.volumeFaturado - somaConsumoPrivado);
+  const parteComumPorUnidade = consumoComum / base.length;
+
+  const enriquecidas = base.map((b) => {
+    const volumeAtribuido = b.consumoPrivado + parteComumPorUnidade;
+    return { ...b, parteComum: parteComumPorUnidade, volumeAtribuido };
+  });
+
+  const totalAtribuido = enriquecidas.reduce((s, e) => s + e.volumeAtribuido, 0);
   const totalCentavos = roundHalfUpCents(conta.valorFaturado * 100);
 
-  // Valor bruto em centavos por unidade (sem arredondar ainda)
-  const bruto = doMes.map((l) => ({
-    leitura: l,
-    centavosExatos: (l.volumeConsumido / totalConsumido) * totalCentavos,
+  const bruto = enriquecidas.map((e) => ({
+    ...e,
+    centavosExatos:
+      totalAtribuido > 0 ? (e.volumeAtribuido / totalAtribuido) * totalCentavos : 0,
   }));
 
   const linhas: LinhaRateio[] = bruto.map((b) => ({
-    unidade: b.leitura.unidade,
-    volumeConsumido: b.leitura.volumeConsumido,
-    percentual: b.leitura.volumeConsumido / totalConsumido,
+    unidade: b.unidade,
+    leituraAnterior: b.leituraAnterior,
+    leituraAtual: b.leituraAtual,
+    consumoPrivado: b.consumoPrivado,
+    parteComum: b.parteComum,
+    volumeAtribuido: b.volumeAtribuido,
+    percentual: totalAtribuido > 0 ? b.volumeAtribuido / totalAtribuido : 0,
     valorRateado: roundHalfUpCents(b.centavosExatos),
     ajuste: 0,
   }));
 
-  let somaCent = linhas.reduce((s, l) => s + l.valorRateado, 0);
-  let diff = totalCentavos - somaCent; // centavos a distribuir (+/-)
+  let diff = totalCentavos - linhas.reduce((s, l) => s + l.valorRateado, 0);
 
-  if (diff !== 0) {
-    // Ordena por maior consumo (desempate: maior parte fracional)
+  if (diff !== 0 && linhas.length > 0) {
     const ordem = linhas
       .map((l, i) => ({
         i,
-        consumo: l.volumeConsumido,
+        vol: l.volumeAtribuido,
         frac: bruto[i].centavosExatos - Math.floor(bruto[i].centavosExatos),
       }))
-      .sort((a, b) => b.consumo - a.consumo || b.frac - a.frac);
+      .sort((a, b) => b.vol - a.vol || b.frac - a.frac);
 
     const step = diff > 0 ? 1 : -1;
     let idx = 0;
     while (diff !== 0) {
-      const target = ordem[idx % ordem.length];
-      linhas[target.i].valorRateado += step;
-      linhas[target.i].ajuste += step;
+      const t = ordem[idx % ordem.length];
+      linhas[t.i].valorRateado += step;
+      linhas[t.i].ajuste += step;
       diff -= step;
       idx++;
     }
   }
 
-  // converte centavos -> R$
   const linhasReais = linhas.map((l) => ({
     ...l,
     valorRateado: l.valorRateado / 100,
@@ -105,9 +150,11 @@ export function calcularRateio(
 
   return {
     mesReferencia,
+    mesAnterior: previousMonth(mesReferencia),
     conta,
-    totalConsumido,
-    diferenca: conta.volumeFaturado - totalConsumido,
+    somaConsumoPrivado,
+    consumoComum,
+    diferenca: conta.volumeFaturado - somaConsumoPrivado,
     linhas: linhasReais,
     somaRateada: linhasReais.reduce((s, l) => s + l.valorRateado, 0),
   };

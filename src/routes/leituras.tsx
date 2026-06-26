@@ -5,6 +5,7 @@ import {
   deleteLeitura, listLeituras, listUnidades, saveLeitura, type Leitura,
 } from "@/lib/storage";
 import { fmtNum } from "@/lib/rateio";
+import { parseBR } from "@/lib/num-br";
 import {
   PageHeader, Field, inputClass, btnPrimary, btnGhost, btnDanger, EmptyState, onSubmit, todayYM,
 } from "@/components/ui-bits";

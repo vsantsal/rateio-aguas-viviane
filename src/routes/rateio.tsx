@@ -35,18 +35,26 @@ function RateioPage() {
 
   return (
     <div>
-      <PageHeader title="Relatório de rateio" subtitle="Proporcional ao consumo medido, HALF UP, ajuste fechando a fatura." />
+      <PageHeader title="Relatório de rateio" subtitle="Proporcional ao consumo medido, com arredondamento matemático fechando o valor da fatura." />
 
       {meses.length === 0 ? (
         <EmptyState>Cadastre contas e leituras para gerar o relatório.</EmptyState>
       ) : (
         <>
-          <div className="max-w-xs mb-6">
-            <Field label="Mês de referência">
-              <select className={inputClass} value={mesAtual} onChange={(e) => setMes(e.target.value)}>
-                {meses.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </Field>
+          <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+            <div className="max-w-xs flex-1 min-w-[180px]">
+              <Field label="Mês de referência">
+                <select className={inputClass} value={mesAtual} onChange={(e) => setMes(e.target.value)}>
+                  {meses.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </Field>
+            </div>
+            {rateio && rateio.linhas.length > 0 && (
+              <div className="flex gap-2">
+                <button className={btnGhost} onClick={() => exportRateioCSV(rateio)}>Exportar CSV</button>
+                <button className={btnPrimary} onClick={() => exportRateioPDF(rateio)}>Exportar PDF</button>
+              </div>
+            )}
           </div>
 
           {!conta && (
@@ -59,15 +67,15 @@ function RateioPage() {
             <>
               <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 <Summary label="Valor faturado" value={conta ? fmtBRL(conta.valorFaturado) : "—"} />
-                <Summary label="Volume faturado" value={conta ? `${fmtNum(conta.volumeFaturado)} m³` : "—"} />
+                <Summary label="Volume faturado" value={conta ? `${fmtNum(conta.volumeFaturado, 3)} m³` : "—"} />
                 <Summary
                   label="Consumo medido das unidades"
-                  value={`${fmtNum(rateio.somaConsumoPrivado)} m³`}
+                  value={`${fmtNum(rateio.somaConsumoPrivado, 3)} m³`}
                   hint={rateio.mesAnterior ? `Atual − ref. ${rateio.mesAnterior}` : undefined}
                 />
                 <Summary
                   label="Atribuído às áreas comuns"
-                  value={`${fmtNum(rateio.consumoComum)} m³`}
+                  value={`${fmtNum(rateio.consumoComum, 3)} m³`}
                   hint={
                     rateio.consumoComum > 0
                       ? `Dividido por ${rateio.linhas.length} unidade(s).`

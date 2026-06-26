@@ -107,7 +107,7 @@ function LeituraForm({ leitura, onClose }: { leitura: Leitura | null; onClose: (
           ))}
         </select>
       </Field>
-      <Field label="Volume consumido (m³)">
+      <Field label="Leitura atual do hidrômetro (m³)">
         <input className={inputClass} inputMode="decimal" value={vol} onChange={(e) => setVol(e.target.value)} required />
       </Field>
       <div className="flex items-end gap-2">

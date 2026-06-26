@@ -47,6 +47,7 @@ const DEFAULT_UNIDADES: Unidade[] = [
   { id: uid(), nome: "102" },
   { id: uid(), nome: "201" },
   { id: uid(), nome: "202" },
+  { id: uid(), nome: "301" },
 ];
 
 export function listUnidades(): Unidade[] {

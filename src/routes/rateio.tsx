@@ -108,12 +108,12 @@ function RateioPage() {
                         <tr key={l.unidade} className="border-t border-border">
                           <Td className="font-medium">{l.unidade}</Td>
                           <Td className="text-right text-muted-foreground">
-                            {l.leituraAnterior === null ? "—" : fmtNum(l.leituraAnterior)}
+                            {l.leituraAnterior === null ? "—" : fmtNum(l.leituraAnterior, 3)}
                           </Td>
-                          <Td className="text-right">{fmtNum(l.leituraAtual)}</Td>
-                          <Td className="text-right">{fmtNum(l.consumoPrivado)}</Td>
+                          <Td className="text-right">{fmtNum(l.leituraAtual, 3)}</Td>
+                          <Td className="text-right">{fmtNum(l.consumoPrivado, 3)}</Td>
                           <Td className="text-right text-muted-foreground">
-                            {l.parteComum > 0 ? fmtNum(l.parteComum) : "—"}
+                            {l.parteComum > 0 ? fmtNum(l.parteComum, 3) : "—"}
                           </Td>
                           <Td className="text-right">{fmtNum(l.percentual * 100)}%</Td>
                           <Td className="text-right font-medium">{fmtBRL(l.valorRateado)}</Td>
@@ -126,8 +126,8 @@ function RateioPage() {
                         <Td>Total</Td>
                         <Td />
                         <Td />
-                        <Td className="text-right">{fmtNum(rateio.somaConsumoPrivado)}</Td>
-                        <Td className="text-right">{fmtNum(rateio.consumoComum)}</Td>
+                        <Td className="text-right">{fmtNum(rateio.somaConsumoPrivado, 3)}</Td>
+                        <Td className="text-right">{fmtNum(rateio.consumoComum, 3)}</Td>
                         <Td className="text-right">100%</Td>
                         <Td className="text-right">{fmtBRL(rateio.somaRateada)}</Td>
                         <Td />
@@ -138,7 +138,7 @@ function RateioPage() {
               )}
 
               <p className="text-xs text-muted-foreground mt-4">
-                Arredondamento HALF UP em centavos. Centavos residuais (para fechar exatamente o valor da fatura)
+                Arredondamento matemático em centavos. Centavos residuais (para fechar exatamente o valor da fatura)
                 são atribuídos primeiro às unidades de maior consumo.
               </p>
             </>

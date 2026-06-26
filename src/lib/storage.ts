@@ -110,11 +110,12 @@ export function listLeituras(): Leitura[] {
 }
 export function saveLeitura(l: Omit<Leitura, "id"> & { id?: string }): Leitura {
   const all = read<Leitura[]>(K.leituras, []);
-  if (l.id) {
-    const i = all.findIndex((x) => x.id === l.id);
-    if (i >= 0) all[i] = { ...all[i], ...l } as Leitura;
+  const normalized = { ...l, leituraAtual: Math.round(l.leituraAtual * 1000) / 1000 };
+  if (normalized.id) {
+    const i = all.findIndex((x) => x.id === normalized.id);
+    if (i >= 0) all[i] = { ...all[i], ...normalized } as Leitura;
   } else {
-    all.push({ ...l, id: uid() } as Leitura);
+    all.push({ ...normalized, id: uid() } as Leitura);
   }
   write(K.leituras, all);
   return all[all.length - 1];

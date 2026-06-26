@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useStore } from "@/lib/use-store";
 import { deleteConta, listContas, saveConta, type Conta } from "@/lib/storage";
 import { fmtBRL, fmtNum } from "@/lib/rateio";
+import { parseBR } from "@/lib/num-br";
 import {
   PageHeader, Field, inputClass, btnPrimary, btnGhost, btnDanger, EmptyState, onSubmit, todayYM,
 } from "@/components/ui-bits";
@@ -83,8 +84,8 @@ function ContaForm({ conta, onClose }: { conta: Conta | null; onClose: () => voi
   return (
     <form
       onSubmit={onSubmit(() => {
-        const volN = Number(vol.replace(",", "."));
-        const valN = Number(val.replace(",", "."));
+        const volN = parseBR(vol);
+        const valN = parseBR(val);
         if (!/^\d{4}-\d{2}$/.test(mes)) return setErr("Mês inválido (AAAA-MM).");
         if (!isFinite(volN) || volN < 0) return setErr("Volume inválido.");
         if (!isFinite(valN) || valN < 0) return setErr("Valor inválido.");

@@ -3,7 +3,8 @@ import { useMemo, useState } from "react";
 import { useStore } from "@/lib/use-store";
 import { listContas, listLeituras } from "@/lib/storage";
 import { calcularRateio, fmtBRL, fmtNum } from "@/lib/rateio";
-import { PageHeader, Field, inputClass, EmptyState } from "@/components/ui-bits";
+import { exportRateioCSV, exportRateioPDF } from "@/lib/rateio-export";
+import { PageHeader, Field, inputClass, btnPrimary, btnGhost, EmptyState } from "@/components/ui-bits";
 
 export const Route = createFileRoute("/rateio")({
   head: () => ({
@@ -34,18 +35,26 @@ function RateioPage() {
 
   return (
     <div>
-      <PageHeader title="Relatório de rateio" subtitle="Proporcional ao consumo medido, HALF UP, ajuste fechando a fatura." />
+      <PageHeader title="Relatório de rateio" subtitle="Proporcional ao consumo medido, com arredondamento matemático fechando o valor da fatura." />
 
       {meses.length === 0 ? (
         <EmptyState>Cadastre contas e leituras para gerar o relatório.</EmptyState>
       ) : (
         <>
-          <div className="max-w-xs mb-6">
-            <Field label="Mês de referência">
-              <select className={inputClass} value={mesAtual} onChange={(e) => setMes(e.target.value)}>
-                {meses.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </Field>
+          <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+            <div className="max-w-xs flex-1 min-w-[180px]">
+              <Field label="Mês de referência">
+                <select className={inputClass} value={mesAtual} onChange={(e) => setMes(e.target.value)}>
+                  {meses.map((m) => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </Field>
+            </div>
+            {rateio && rateio.linhas.length > 0 && (
+              <div className="flex gap-2">
+                <button className={btnGhost} onClick={() => exportRateioCSV(rateio)}>Exportar CSV</button>
+                <button className={btnPrimary} onClick={() => exportRateioPDF(rateio)}>Exportar PDF</button>
+              </div>
+            )}
           </div>
 
           {!conta && (
@@ -58,15 +67,15 @@ function RateioPage() {
             <>
               <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 <Summary label="Valor faturado" value={conta ? fmtBRL(conta.valorFaturado) : "—"} />
-                <Summary label="Volume faturado" value={conta ? `${fmtNum(conta.volumeFaturado)} m³` : "—"} />
+                <Summary label="Volume faturado" value={conta ? `${fmtNum(conta.volumeFaturado, 3)} m³` : "—"} />
                 <Summary
                   label="Consumo medido das unidades"
-                  value={`${fmtNum(rateio.somaConsumoPrivado)} m³`}
+                  value={`${fmtNum(rateio.somaConsumoPrivado, 3)} m³`}
                   hint={rateio.mesAnterior ? `Atual − ref. ${rateio.mesAnterior}` : undefined}
                 />
                 <Summary
                   label="Atribuído às áreas comuns"
-                  value={`${fmtNum(rateio.consumoComum)} m³`}
+                  value={`${fmtNum(rateio.consumoComum, 3)} m³`}
                   hint={
                     rateio.consumoComum > 0
                       ? `Dividido por ${rateio.linhas.length} unidade(s).`
@@ -99,12 +108,12 @@ function RateioPage() {
                         <tr key={l.unidade} className="border-t border-border">
                           <Td className="font-medium">{l.unidade}</Td>
                           <Td className="text-right text-muted-foreground">
-                            {l.leituraAnterior === null ? "—" : fmtNum(l.leituraAnterior)}
+                            {l.leituraAnterior === null ? "—" : fmtNum(l.leituraAnterior, 3)}
                           </Td>
-                          <Td className="text-right">{fmtNum(l.leituraAtual)}</Td>
-                          <Td className="text-right">{fmtNum(l.consumoPrivado)}</Td>
+                          <Td className="text-right">{fmtNum(l.leituraAtual, 3)}</Td>
+                          <Td className="text-right">{fmtNum(l.consumoPrivado, 3)}</Td>
                           <Td className="text-right text-muted-foreground">
-                            {l.parteComum > 0 ? fmtNum(l.parteComum) : "—"}
+                            {l.parteComum > 0 ? fmtNum(l.parteComum, 3) : "—"}
                           </Td>
                           <Td className="text-right">{fmtNum(l.percentual * 100)}%</Td>
                           <Td className="text-right font-medium">{fmtBRL(l.valorRateado)}</Td>
@@ -117,8 +126,8 @@ function RateioPage() {
                         <Td>Total</Td>
                         <Td />
                         <Td />
-                        <Td className="text-right">{fmtNum(rateio.somaConsumoPrivado)}</Td>
-                        <Td className="text-right">{fmtNum(rateio.consumoComum)}</Td>
+                        <Td className="text-right">{fmtNum(rateio.somaConsumoPrivado, 3)}</Td>
+                        <Td className="text-right">{fmtNum(rateio.consumoComum, 3)}</Td>
                         <Td className="text-right">100%</Td>
                         <Td className="text-right">{fmtBRL(rateio.somaRateada)}</Td>
                         <Td />
@@ -129,7 +138,7 @@ function RateioPage() {
               )}
 
               <p className="text-xs text-muted-foreground mt-4">
-                Arredondamento HALF UP em centavos. Centavos residuais (para fechar exatamente o valor da fatura)
+                Arredondamento matemático em centavos. Centavos residuais (para fechar exatamente o valor da fatura)
                 são atribuídos primeiro às unidades de maior consumo.
               </p>
             </>

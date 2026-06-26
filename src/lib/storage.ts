@@ -18,7 +18,7 @@ export type Unidade = { id: string; nome: string };
 const K = {
   contas: "viviane.contas.v1",
   leituras: "viviane.leituras.v1",
-  unidades: "viviane.unidades.v1",
+  unidades: "viviane.unidades.v2",
 };
 
 function read<T>(key: string, fallback: T): T {
@@ -47,6 +47,7 @@ const DEFAULT_UNIDADES: Unidade[] = [
   { id: uid(), nome: "102" },
   { id: uid(), nome: "201" },
   { id: uid(), nome: "202" },
+  { id: uid(), nome: "301" },
 ];
 
 export function listUnidades(): Unidade[] {

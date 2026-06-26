@@ -64,7 +64,7 @@ function LeiturasPage() {
                 <tr key={l.id} className="border-t border-border">
                   <Td className="font-medium">{l.mesReferencia}</Td>
                   <Td>{l.unidade}</Td>
-                  <Td className="text-right">{fmtNum(l.leituraAtual)}</Td>
+                  <Td className="text-right">{fmtNum(l.leituraAtual, 3)}</Td>
                   <Td className="text-right whitespace-nowrap">
                     <button className={btnGhost} onClick={() => { setEditing(l); setShowForm(true); }}>Editar</button>{" "}
                     <button className={btnDanger} onClick={() => { if (confirm("Excluir leitura?")) deleteLeitura(l.id); }}>Excluir</button>
@@ -81,15 +81,24 @@ function LeiturasPage() {
 
 function LeituraForm({ leitura, onClose }: { leitura: Leitura | null; onClose: () => void }) {
   const unidades = useStore(listUnidades) ?? [];
-  const [mes, setMes] = useState(leitura?.mesReferencia ?? todayYM());
-  const [unidade, setUnidade] = useState(leitura?.unidade ?? unidades[0]?.nome ?? "");
-  const [vol, setVol] = useState(String(leitura?.leituraAtual ?? ""));
+  const leituras = useStore(listLeituras) ?? [];
+  // Ao criar nova leitura, pré-preenche com o último mês e a última unidade registrados.
+  const ultima = leituras[0];
+  const [mes, setMes] = useState(
+    leitura?.mesReferencia ?? ultima?.mesReferencia ?? todayYM(),
+  );
+  const [unidade, setUnidade] = useState(
+    leitura?.unidade ?? ultima?.unidade ?? unidades[0]?.nome ?? "",
+  );
+  const [vol, setVol] = useState(
+    leitura ? String(leitura.leituraAtual).replace(".", ",") : "",
+  );
   const [err, setErr] = useState("");
 
   return (
     <form
       onSubmit={onSubmit(() => {
-        const volN = Number(vol.replace(",", "."));
+        const volN = parseBR(vol);
         if (!/^\d{4}-\d{2}$/.test(mes)) return setErr("Mês inválido.");
         if (!unidade) return setErr("Selecione uma unidade.");
         if (!isFinite(volN) || volN < 0) return setErr("Leitura inválida.");

@@ -123,22 +123,23 @@ export function calcularRateio(
   let diff = totalCentavos - linhas.reduce((s, l) => s + l.valorRateado, 0);
 
   if (diff !== 0 && linhas.length > 0) {
-    const ordem = linhas
-      .map((l, i) => ({
-        i,
-        vol: l.volumeAtribuido,
-        frac: bruto[i].centavosExatos - Math.floor(bruto[i].centavosExatos),
-      }))
-      .sort((a, b) => b.vol - a.vol || b.frac - a.frac);
-
+    // Diferença positiva: acrescenta ao menor valor.
+    // Diferença negativa: subtrai do maior valor.
+    // Aplicado centavo a centavo, re-selecionando após cada ajuste para
+    // distribuir resíduos maiores que 1 centavo de forma equilibrada.
     const step = diff > 0 ? 1 : -1;
-    let idx = 0;
     while (diff !== 0) {
-      const t = ordem[idx % ordem.length];
-      linhas[t.i].valorRateado += step;
-      linhas[t.i].ajuste += step;
+      let alvo = 0;
+      for (let i = 1; i < linhas.length; i++) {
+        if (step > 0) {
+          if (linhas[i].valorRateado < linhas[alvo].valorRateado) alvo = i;
+        } else {
+          if (linhas[i].valorRateado > linhas[alvo].valorRateado) alvo = i;
+        }
+      }
+      linhas[alvo].valorRateado += step;
+      linhas[alvo].ajuste += step;
       diff -= step;
-      idx++;
     }
   }
 

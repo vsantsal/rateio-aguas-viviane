@@ -138,8 +138,8 @@ function RateioPage() {
               )}
 
               <p className="text-xs text-muted-foreground mt-4">
-                Arredondamento matemático em centavos. Centavos residuais (para fechar exatamente o valor da fatura)
-                são atribuídos primeiro às unidades de maior consumo.
+                Arredondamento matemático em centavos. Diferenças positivas para fechar o valor da fatura
+                são acrescidas à unidade de menor valor; diferenças negativas são subtraídas da unidade de maior valor.
               </p>
             </>
           )}

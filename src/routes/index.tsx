@@ -80,6 +80,12 @@ function Home() {
           </p>
         </section>
       )}
+
+      <footer className="pt-6 border-t border-border">
+        <p className="text-xs text-muted-foreground">
+          Arredondamento matemático com ajuste automático para fechar exatamente o valor da fatura.
+        </p>
+      </footer>
     </div>
   );
 }

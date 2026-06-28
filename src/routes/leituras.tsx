@@ -81,9 +81,8 @@ function LeiturasPage() {
 
 function LeituraForm({ leitura, onClose }: { leitura: Leitura | null; onClose: () => void }) {
   const unidades = useStore(listUnidades) ?? [];
-  const leituras = useStore(listLeituras) ?? [];
-  // Ao criar nova leitura, pré-preenche com o último mês e a última unidade registrados.
-  const ultima = leituras[0];
+  // Ao criar nova leitura, pré-preenche com o mês e a unidade da última leitura inserida.
+  const ultima = useStore(getUltimaLeituraInserida);
   const [mes, setMes] = useState(
     leitura?.mesReferencia ?? ultima?.mesReferencia ?? todayYM(),
   );

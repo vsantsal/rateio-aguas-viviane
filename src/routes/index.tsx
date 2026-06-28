@@ -31,8 +31,7 @@ function Home() {
         </h1>
         <p className="text-muted-foreground mt-3 max-w-2xl">
           Cadastre as contas da concessionária e as leituras dos hidrômetros de cada unidade.
-          O rateio é calculado proporcionalmente ao consumo, com arredondamento HALF UP e ajuste
-          automático para fechar exatamente o valor da fatura.
+          O rateio é calculado proporcionalmente ao consumo.
         </p>
       </section>
 

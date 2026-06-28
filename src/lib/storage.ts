@@ -115,6 +115,17 @@ export function listLeituras(): Leitura[] {
 export function saveLeitura(l: Omit<Leitura, "id"> & { id?: string }): Leitura {
   const all = read<Leitura[]>(K.leituras, []);
   const normalized = { ...l, leituraAtual: Math.round(l.leituraAtual * 1000) / 1000 };
+  const dup = all.find(
+    (x) =>
+      x.mesReferencia === normalized.mesReferencia &&
+      x.unidade === normalized.unidade &&
+      x.id !== normalized.id,
+  );
+  if (dup) {
+    throw new Error(
+      `Já existe uma leitura da unidade ${normalized.unidade} para o mês ${normalized.mesReferencia}.`,
+    );
+  }
   if (normalized.id) {
     const i = all.findIndex((x) => x.id === normalized.id);
     if (i >= 0) all[i] = { ...all[i], ...normalized } as Leitura;

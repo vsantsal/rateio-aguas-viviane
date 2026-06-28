@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useStore } from "@/lib/use-store";
 import {
-  deleteLeitura, listLeituras, listUnidades, saveLeitura, type Leitura,
+  deleteLeitura, getUltimaLeituraInserida, listLeituras, listUnidades, saveLeitura, type Leitura,
 } from "@/lib/storage";
 import { fmtNum } from "@/lib/rateio";
 import { parseBR } from "@/lib/num-br";

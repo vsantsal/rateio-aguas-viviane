@@ -112,6 +112,10 @@ export function listLeituras(): Leitura[] {
       a.unidade.localeCompare(b.unidade),
   );
 }
+export function getUltimaLeituraInserida(): Leitura | undefined {
+  const all = read<Leitura[]>(K.leituras, []);
+  return all[all.length - 1];
+}
 export function saveLeitura(l: Omit<Leitura, "id"> & { id?: string }): Leitura {
   const all = read<Leitura[]>(K.leituras, []);
   const normalized = { ...l, leituraAtual: Math.round(l.leituraAtual * 1000) / 1000 };

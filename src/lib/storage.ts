@@ -84,6 +84,10 @@ export function listContas(): Conta[] {
 }
 export function saveConta(c: Omit<Conta, "id"> & { id?: string }): Conta {
   const all = read<Conta[]>(K.contas, []);
+  const dup = all.find((x) => x.mesReferencia === c.mesReferencia && x.id !== c.id);
+  if (dup) {
+    throw new Error(`Já existe uma conta cadastrada para o mês ${c.mesReferencia}.`);
+  }
   if (c.id) {
     const i = all.findIndex((x) => x.id === c.id);
     if (i >= 0) all[i] = { ...all[i], ...c } as Conta;

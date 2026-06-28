@@ -84,6 +84,10 @@ export function listContas(): Conta[] {
 }
 export function saveConta(c: Omit<Conta, "id"> & { id?: string }): Conta {
   const all = read<Conta[]>(K.contas, []);
+  const dup = all.find((x) => x.mesReferencia === c.mesReferencia && x.id !== c.id);
+  if (dup) {
+    throw new Error(`Já existe uma conta cadastrada para o mês ${c.mesReferencia}.`);
+  }
   if (c.id) {
     const i = all.findIndex((x) => x.id === c.id);
     if (i >= 0) all[i] = { ...all[i], ...c } as Conta;
@@ -111,6 +115,17 @@ export function listLeituras(): Leitura[] {
 export function saveLeitura(l: Omit<Leitura, "id"> & { id?: string }): Leitura {
   const all = read<Leitura[]>(K.leituras, []);
   const normalized = { ...l, leituraAtual: Math.round(l.leituraAtual * 1000) / 1000 };
+  const dup = all.find(
+    (x) =>
+      x.mesReferencia === normalized.mesReferencia &&
+      x.unidade === normalized.unidade &&
+      x.id !== normalized.id,
+  );
+  if (dup) {
+    throw new Error(
+      `Já existe uma leitura da unidade ${normalized.unidade} para o mês ${normalized.mesReferencia}.`,
+    );
+  }
   if (normalized.id) {
     const i = all.findIndex((x) => x.id === normalized.id);
     if (i >= 0) all[i] = { ...all[i], ...normalized } as Leitura;

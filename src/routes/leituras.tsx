@@ -102,7 +102,11 @@ function LeituraForm({ leitura, onClose }: { leitura: Leitura | null; onClose: (
         if (!/^\d{4}-\d{2}$/.test(mes)) return setErr("Mês inválido.");
         if (!unidade) return setErr("Selecione uma unidade.");
         if (!isFinite(volN) || volN < 0) return setErr("Leitura inválida.");
-        saveLeitura({ id: leitura?.id, mesReferencia: mes, unidade, leituraAtual: volN });
+        try {
+          saveLeitura({ id: leitura?.id, mesReferencia: mes, unidade, leituraAtual: volN });
+        } catch (e) {
+          return setErr(e instanceof Error ? e.message : "Erro ao salvar leitura.");
+        }
         onClose();
       })}
       className="rounded-xl border border-border bg-card p-5 mb-6 grid sm:grid-cols-4 gap-4"

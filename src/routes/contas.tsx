@@ -89,7 +89,11 @@ function ContaForm({ conta, onClose }: { conta: Conta | null; onClose: () => voi
         if (!/^\d{4}-\d{2}$/.test(mes)) return setErr("Mês inválido (AAAA-MM).");
         if (!isFinite(volN) || volN < 0) return setErr("Volume inválido.");
         if (!isFinite(valN) || valN < 0) return setErr("Valor inválido.");
-        saveConta({ id: conta?.id, mesReferencia: mes, volumeFaturado: volN, valorFaturado: valN });
+        try {
+          saveConta({ id: conta?.id, mesReferencia: mes, volumeFaturado: volN, valorFaturado: valN });
+        } catch (e) {
+          return setErr(e instanceof Error ? e.message : "Erro ao salvar conta.");
+        }
         onClose();
       })}
       className="rounded-xl border border-border bg-card p-5 mb-6 grid sm:grid-cols-4 gap-4"

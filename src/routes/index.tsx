@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useStore } from "@/lib/use-store";
 import { listContas, listLeituras, listUnidades } from "@/lib/storage";
 import { calcularRateio, fmtBRL } from "@/lib/rateio";
+import { BackupPanel } from "@/components/backup-panel";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -80,6 +81,8 @@ function Home() {
           </p>
         </section>
       )}
+
+      <BackupPanel />
 
       <footer className="pt-6 border-t border-border">
         <p className="text-xs text-muted-foreground">

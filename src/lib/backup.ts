@@ -38,18 +38,35 @@ export function buildBackup(): Backup {
 
 export function downloadBackup() {
   const data = buildBackup();
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json",
-  });
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
   const ts = new Date().toISOString().slice(0, 10);
+  const filename = `aguas-viviane-backup-${ts}.json`;
+
+  // Tentativa 1: âncora com download (funciona no navegador comum)
+  const a = document.createElement("a");
   a.href = url;
-  a.download = `aguas-viviane-backup-${ts}.json`;
+  a.download = filename;
+  a.rel = "noopener";
+  a.target = "_blank";
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+
+  // Tentativa 2 (fallback): quando o app está dentro de um iframe de preview,
+  // o download pode ser bloqueado silenciosamente. Abrir em nova aba permite
+  // ao usuário salvar o arquivo manualmente.
+  const inIframe = typeof window !== "undefined" && window.top !== window.self;
+  if (inIframe) {
+    try {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch {
+      // ignora
+    }
+  }
+
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
 export type ImportMode = "replace" | "merge";
